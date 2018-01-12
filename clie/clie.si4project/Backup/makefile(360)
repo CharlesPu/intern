@@ -1,0 +1,30 @@
+EXEC = clie
+OBJS = main.o\
+        client.o\
+        canComm.o\
+        miscellaneous.o\
+        des.o\
+        serial.o\
+        buffer.o
+SRC  = main.cpp\
+        client.cpp\
+        canComm.cpp\
+        miscellaneous.cpp\
+        des.c\
+        serial.c\
+        buffer.cpp
+
+CC = arm-none-linux-gnueabi-g++
+CFLAGS += -O2 -Wall 
+LDFLAGS += -pthread
+
+all:$(EXEC)
+
+$(EXEC):$(OBJS)
+	$(CC) $(LDFLAGS) -o $@ $(OBJS)
+
+%.o:%.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
+
+clean:
+	@rm -vf $(EXEC) *.o *~
