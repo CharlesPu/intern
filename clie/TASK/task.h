@@ -20,6 +20,7 @@ public:
 	static void* ClientReceive(void* can_eth_para);
 	static void* CanSend(void* can);
 	static void* ClientSend(void* c);
+	static void* test(void*);
 };
 bool IsBelongTo(unsigned short canfr_id, void* owner);
 void CreatAllRecvFilter(void);

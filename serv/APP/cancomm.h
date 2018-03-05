@@ -18,7 +18,7 @@ public:
     static void canPrintFrame(struct can_frame*);
 
 public:
-	int can_sock;
+	int can_sock,can_sock_send;
 	int can_channel;
     struct ifreq _ifr1, _ifr2;
 	Buffer can_buf;	

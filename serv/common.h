@@ -33,6 +33,7 @@ using namespace std;
 //#define PRINT_ULTI_SND_REC
 //#define PRINT_CAN
 //#define PRINT_BUFFER
+//#define PRINT_PROCESS
 
 #define SERV_IP "192.168.2.165"
 #define PORT 8083 // The port which is communicate with server

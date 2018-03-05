@@ -125,10 +125,10 @@ bool Server::ServerAccept(void)
 
 int Server::ServerRecv(int& sock)
 {
-	memset(m_rxBuf,0,sizeof(m_rxBuf)); 
+	memset(m_rxBuf,0,BUF_LENGTH); 
 #ifdef DES
 	/****************报文解密*********/
-	memset(m_rx_cryptBuf,0,sizeof(m_rx_cryptBuf));
+	memset(m_rx_cryptBuf,0,BUF_LENGTH);
 	int ret = recv(sock, m_rx_cryptBuf, BUF_LENGTH, 0);
 	int tem=0;
 	if(ret<0)

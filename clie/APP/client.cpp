@@ -88,10 +88,10 @@ bool Client::ClientConnect()
 }
 int Client::ClientRecv(int &csock)
 {
-	memset(m_rxBuf,0,sizeof(m_rxBuf));
+	memset(m_rxBuf,0,BUF_LENGTH);
 #ifdef DES
 	/****************报文解密*********/
-	memset(m_rx_cryptBuf,0,sizeof(m_rx_cryptBuf));
+	memset(m_rx_cryptBuf,0,BUF_LENGTH);
     int ret = recv(csock, m_rx_cryptBuf, BUF_LENGTH,0);
 	int tem=0;
 	if(ret<0)
@@ -167,7 +167,6 @@ int Client::ClientSend(int &csock, const char *sendbuf,int size)
 			for(int i=0; i<  ret ;i++)
 			   printf("0x%02x ",m_tx_cryptBuf[i]);
 			printf("\n");
-			printf("send out by client SUCCESS!\r\n");	
 		}
 	else
 		printf("send out by client FAIL!\r\n");
@@ -183,7 +182,6 @@ int Client::ClientSend(int &csock, const char *sendbuf,int size)
 			for(int i=0; i<  ret ;i++)
 			   printf("0x%02x ",sendbuf[i]);
 			printf("\n");
-			printf("send out by client SUCCESS!\r\n");	
 		}
 	else
 		printf("send out by client FAIL!\r\n");	

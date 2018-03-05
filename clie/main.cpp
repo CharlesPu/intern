@@ -62,21 +62,26 @@ int main(int argc,char* args[])
 //		printf("task%d's param now is :%d \n",i,sched_param[i].sched_priority); 		
 	}
 
-	int ret1 = pthread_create(&th[0],&attr[0],Task::CanReceive,(void*)&can_eth_para1);//等待客户端数据
-	int ret2 = pthread_create(&th[1],&attr[1],Task::CanReceive,(void*)&can_eth_para2);//等待客户端数据
-	int ret3 = pthread_create(&th[2],&attr[2],Task::ClientReceive,(void*)&can_eth_para1);//等待客户端数据
-	int ret4 = pthread_create(&th[3],&attr[3],Task::CanSend,(void*)&can3);//等待客户端数据
-	int ret5 = pthread_create(&th[4],&attr[4],Task::CanSend,(void*)&can4);//等待客户端数据
-	int ret6 = pthread_create(&th[5],&attr[5],Task::ClientSend,(void*)&c);//等待客户端数据
+//	int ret1 = pthread_create(&th[0],&attr[0],Task::CanReceive,(void*)&can_eth_para1);
+//	int ret2 = pthread_create(&th[1],&attr[1],Task::CanReceive,(void*)&can_eth_para2);
+//	int ret3 = pthread_create(&th[2],&attr[2],Task::ClientReceive,(void*)&can_eth_para1);
+//	int ret4 = pthread_create(&th[3],&attr[3],Task::CanSend,(void*)&can3);
+//	int ret5 = pthread_create(&th[4],&attr[4],Task::CanSend,(void*)&can4);
+//	int ret6 = pthread_create(&th[5],&attr[5],Task::ClientSend,(void*)&c);
 
-
+	int ret1 = pthread_create(&th[0],&attr[0],Task::CanReceive,(void*)&can_eth_para2);
+	int ret2 = pthread_create(&th[1],&attr[1],Task::CanReceive,(void*)&can_eth_para1);
+	int ret3 = pthread_create(&th[2],&attr[2],Task::ClientSend,(void*)&c);
+	int ret4 = pthread_create(&th[3],&attr[3],Task::ClientReceive,(void*)&can_eth_para1);
+//	int ret5 = pthread_create(&th[4],&attr[4],Task::CanSend,(void*)&can4);
+//	int ret6=0;// pthread_create(&th[1],&attr[1],Task::CanReceive,(void*)&can_eth_para2);
 
 	for(int i=0;i<TASK_NUM;i++)
 		pthread_attr_destroy(&attr[i]); 		
 
-	if (ret1  || ret2 || ret3 || ret4 || ret5 || ret6)
+	if (ret1 || ret2 || ret3 || ret4 )//|| ret5 || ret6)
 	{
-		printf("ERROR:return code frome pthread_create is %d %d %d %d %d %d",ret1,ret2,ret3,ret4,ret5,ret6);
+		printf("ERROR:return code frome pthread_create is %d %d %d %d %d %d",ret1,ret2,ret3,ret4);//,ret5,ret6);
 		exit(-1);
 	}
 	else

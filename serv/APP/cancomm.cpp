@@ -5,12 +5,15 @@
 CanComm::CanComm()
 {
 	can_sock=0;
+	can_sock_send=0;
 }
 
 CanComm::~CanComm()
 {	
 	if(can_sock)
     	close(can_sock);
+	if(can_sock_send)
+    	close(can_sock_send);
 }
 
 
@@ -67,6 +70,52 @@ bool CanComm::CanInit(int channel)
     }
     setsockopt(can_sock,SOL_CAN_RAW,CAN_RAW_RECV_OWN_MSGS,&ro,sizeof(ro));
 
+
+    can_sock_send = socket(domain,type,protocol);//创建socketcan套接字
+    if (can_sock_send< 0)
+    {
+        perror("socket2 PF_CAN failed");
+        return false;
+    }
+
+	switch (channel)
+		{
+			case 1:	strcpy(_ifr2.ifr_name,"can0");//指定can设备
+					can_channel=0;
+					break;
+			case 2:	strcpy(_ifr2.ifr_name,"can1");//指定can设备
+					can_channel=1;
+					break;
+			case 3:	strcpy(_ifr2.ifr_name,"can0");//指定can设备
+					can_channel=2;
+					break;
+			case 4:	strcpy(_ifr2.ifr_name,"can1");//指定can设备
+					can_channel=3;
+					break;	
+			default:printf("channel error!\n");
+					return false;
+					break;
+		}
+		
+    struct sockaddr_can addr2;
+    ret = ioctl(can_sock_send, SIOCGIFINDEX, &_ifr2);
+    if (ret < 0)
+    {
+        perror("ioctl2 failed");
+        return false;
+    }
+
+    addr2.can_family = AF_CAN;
+    addr2.can_ifindex = _ifr2.ifr_ifindex;
+
+    ret = bind(can_sock_send, (struct sockaddr *)&addr2, sizeof(addr2));//将套接字与can0绑定
+    if (ret < 0)
+    {
+        perror("bind2 failed");
+        return false;
+    }
+    setsockopt(can_sock_send,SOL_CAN_RAW,CAN_RAW_RECV_OWN_MSGS,&ro,sizeof(ro));
+
 //    printf("socket1 init failed.\n");
 
    /* if(!socketInit(m_s2,_ifr2))
@@ -79,7 +128,8 @@ bool CanComm::CanInit(int channel)
 	send_signal = PTHREAD_COND_INITIALIZER;
 	send_lock = PTHREAD_MUTEX_INITIALIZER;	
     CanRecvFilter(can_sock);
-    //canFilter(m_s2,isSetFilter);
+	CanRecvFilter(can_sock_send);
+
 
     return true;
 }
@@ -110,6 +160,7 @@ void CanComm::CanRecvFilter(int& sock)
 						m_filter[size++].can_mask = CAN_SFF_MASK;
 					}	
 		}
+/**************打印filter数组****************/
 	printf("filter_id:\n");
 	for(int i=0; i<size ;i++)
 		printf("0x%03x\t",m_filter[i].can_id);
