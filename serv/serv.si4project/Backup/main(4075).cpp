@@ -46,7 +46,7 @@ int main(int argc,char* args[])
 	can_eth_para2._server=&s;
 	
 	pthread_attr_t attr[TASK_NUM];
-	int polic=SCHED_RR ; //设为时间片轮询法执行
+	int polic=SCHED_RR ; 
 	struct sched_param sched_param[TASK_NUM];
 	int prior[TASK_NUM]={98,97,99,88,87,89};//任务的优先级，接收的任务总体最高，其中以太网的接收最高
 
@@ -62,16 +62,16 @@ int main(int argc,char* args[])
 //		printf("task%d's param now is :%d \n",i,sched_param[i].sched_priority); 		
 	}
 
-	int ret1 = pthread_create(&th[0],&attr[0],Task::CanReceive,(void*)&can_eth_para1);//can1接收，并分进对应其他缓冲区中
-	int ret2 = pthread_create(&th[1],&attr[1],Task::CanReceive,(void*)&can_eth_para2);//can2接收，并分进对应其他缓冲区中
-	int ret3 = pthread_create(&th[2],&attr[2],Task::ServerReceive,(void*)&can_eth_para1);//eth接收，并分进对应其他缓冲区中
-	int ret4 = pthread_create(&th[3],&attr[3],Task::CanSend,(void*)&can1);//遍历can1发送缓冲区，发送出去
-	int ret5 = pthread_create(&th[4],&attr[4],Task::CanSend,(void*)&can2);//遍历can2发送缓冲区，发送出去
-	int ret6 = pthread_create(&th[5],&attr[5],Task::ServerSend,(void*)&s);//遍历eth发送缓冲区，发送出去
+	int ret1 = pthread_create(&th[0],&attr[0],Task::CanReceive,(void*)&can_eth_para1);
+	int ret2 = pthread_create(&th[1],&attr[1],Task::CanReceive,(void*)&can_eth_para2);
+	int ret3 = pthread_create(&th[2],&attr[2],Task::ServerReceive,(void*)&can_eth_para1);
+	int ret4 = pthread_create(&th[3],&attr[3],Task::CanSend,(void*)&can1);
+	int ret5 = pthread_create(&th[4],&attr[4],Task::CanSend,(void*)&can2);
+	int ret6 = pthread_create(&th[5],&attr[5],Task::ServerSend,(void*)&s);
 
 //	int ret1 = pthread_create(&th[0],&attr[0],Task::CanReceive,(void*)&can_eth_para1);//等待客户端数据
-//	int ret2 = pthread_create(&th[1],&attr[1],Task::CanReceive,(void*)&can_eth_para2);//等待客户端数据[[]]
-//	int ret3 = pthread_create(&th[2],&attr[2],Task::ServerReceive,(void*)&can_e[]th_para1);//等待客户端数据
+//	int ret2 = pthread_create(&th[1],&attr[1],Task::CanReceive,(void*)&can_eth_para2);//等待客户端数据
+//	int ret3 = pthread_create(&th[2],&attr[2],Task::ServerReceive,(void*)&can_eth_para1);//等待客户端数据
 //	int ret4 = pthread_create(&th[3],&attr[3],Task::CanSend,(void*)&can1);//等待客户端数据
 //	int ret5 = pthread_create(&th[4],&attr[4],Task::ServerSend,(void*)&s);//等待客户端数据
 //	int ret6=0;

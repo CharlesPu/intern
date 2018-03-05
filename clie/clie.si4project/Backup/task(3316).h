@@ -22,7 +22,6 @@ public:
 	static void* ClientSend(void* c);
 	static void* CanSend_test(void* can_eth_para);
 	static void* test(void*);
-	static void* SendAll(void* can_eth_para);
 };
 bool IsBelongTo(unsigned short canfr_id, void* owner);
 void CreatAllRecvFilter(void);

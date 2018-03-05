@@ -38,7 +38,7 @@ using namespace std;
 
 #define SERV_IP "192.168.2.165"
 #define PORT 8083 // The port which is communicate with server
-#define TASK_NUM 3
+#define TASK_NUM 6
 #define filter_size_per_node 30 //每个节点的发送和接收id数组最大数量
 #define node_num_per_bus 20  //每个总线上挂载的设备最大数量
 #define filter_size_per_bus 60  //每个总线上接收id数组的最大数量

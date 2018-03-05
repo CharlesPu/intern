@@ -53,8 +53,31 @@ void* Task::CanReceive(void* can_eth_para)
 			xorsum = xorsum & 0xff;
 			temp[fr.can_dlc+3]=xorsum;
 
-			_can_buf->PutFrame(temp, &(_can_buf->recv_q), temp[0]);
-
+			if(IsBelongTo(fr.can_id, (void*)can_eth_para_temp->_another_can))//如果要发给另一个can
+			{		
+				pthread_mutex_lock(&(can_eth_para_temp->_another_can->send_lock));				
+				int r=another_can_buf->PutFrame(temp, &(another_can_buf->send_q),temp[0]);
+#ifdef PRINT_PROCESS
+				printf("another can's frame:");//将从客户端读到的数据，在屏幕上输出
+				for (int i = 0; i < r; i++)
+					printf("0x%02x ",temp[i]);
+				printf("\n");
+#endif
+				pthread_mutex_unlock(&(can_eth_para_temp->_another_can->send_lock));
+				pthread_cond_signal(&(can_eth_para_temp->_another_can->send_signal));
+			}else						//如果要发给以太网
+			{			
+				pthread_mutex_lock(&(can_eth_para_temp->_client->send_lock));
+				int r=_clie_buf->PutFrame(temp, &(_clie_buf->send_q),temp[0]);
+#ifdef PRINT_PROCESS
+				printf("eth's frame:");//将从客户端读到的数据，在屏幕上输出
+				for (int i = 0; i < r; i++)
+					printf("0x%02x ",temp[i]);
+				printf("\n");
+#endif
+				pthread_mutex_unlock(&(can_eth_para_temp->_client->send_lock));
+				pthread_cond_signal(&(can_eth_para_temp->_client->send_signal));
+			}
 		}
 /**********************************************************************************************************************************/
 /**********************************************************************************************************************************/
@@ -80,8 +103,31 @@ void* Task::CanReceive(void* can_eth_para)
 			xorsum2 = xorsum2 & 0xff;
 			temp2[fr2.can_dlc+3]=xorsum2;
 
-			another_can_buf->PutFrame(temp2, &(another_can_buf->recv_q), temp2[0]);
-			
+			if(IsBelongTo(fr2.can_id, (void*)can_eth_para_temp->_can))//如果要发给另一个can
+			{		
+				pthread_mutex_lock(&(can_eth_para_temp->_can->send_lock));				
+				int r=_can_buf->PutFrame(temp2, &(_can_buf->send_q),temp2[0]);
+#ifdef PRINT_PROCESS
+				printf("another2 can's frame:");//将从客户端读到的数据，在屏幕上输出
+				for (int i = 0; i < r; i++)
+					printf("0x%02x ",temp2[i]);
+				printf("\n");
+#endif
+				pthread_mutex_unlock(&(can_eth_para_temp->_can->send_lock));
+//				pthread_cond_signal(&(can_eth_para_temp->_can->send_signal));
+			}else						//如果要发给以太网
+			{			
+				pthread_mutex_lock(&(can_eth_para_temp->_client->send_lock));
+				int r=_clie_buf->PutFrame(temp2, &(_clie_buf->send_q),temp2[0]);
+#ifdef PRINT_PROCESS
+				printf("eth's frame:");//将从客户端读到的数据，在屏幕上输出
+				for (int i = 0; i < r; i++)
+					printf("0x%02x ",temp2[i]);
+				printf("\n");
+#endif
+				pthread_mutex_unlock(&(can_eth_para_temp->_client->send_lock));
+//				pthread_cond_signal(&(can_eth_para_temp->_client->send_signal));
+			}
 		}
 
 	}
@@ -97,7 +143,6 @@ void* Task::CanReceive(void* can_eth_para)
 	
 	Buffer* _can_buf = &(can_eth_para_temp->_can->can_buf);
 	Buffer* another_can_buf = &(can_eth_para_temp->_another_can->can_buf);
-	Buffer* _clie_buf=&(clie_temp->clie_buf);
 	 
 	 int ret;
 	 
@@ -117,45 +162,37 @@ void* Task::CanReceive(void* can_eth_para)
 					xorsum = xorsum ^ clie_temp->m_rxBuf[frame_head+j];
 				xorsum = xorsum & 0xff;
 				if(xorsum == clie_temp->m_rxBuf[frame_head + frame_len -1])
-					{		
-					_clie_buf->PutFrame(&(clie_temp->m_rxBuf[frame_head]), &(_clie_buf->recv_q), frame_len);
+					{					
+					unsigned short id_temp
+						=((clie_temp->m_rxBuf[frame_head+1]&0xffff)<<8|clie_temp->m_rxBuf[frame_head+2]);	
+					if(IsBelongTo(id_temp,(void*)can_eth_para_temp->_can))//如果属于第一个can的
+						{
+						pthread_mutex_lock(&(can_eth_para_temp->_can->send_lock));
+						int r=_can_buf->PutFrame(&(clie_temp->m_rxBuf[frame_head]), 
+							&(_can_buf->send_q), frame_len);
 #ifdef PRINT_PROCESS
-						printf("client_recv_buf:");//将从客户端读到的数据，在屏幕上输出
-						for (int i = 0; i < frame_len; i++)
+						printf("another can's frame:");//将从客户端读到的数据，在屏幕上输出
+						for (int i = 0; i < r; i++)
+							printf("0x%02x ",clie_temp->m_rxBuf[frame_head+i]);
+						printf("\n");
+#endif							
+						pthread_mutex_unlock(&(can_eth_para_temp->_can->send_lock));
+//						pthread_cond_signal(&(can_eth_para_temp->_can->send_signal));
+						}
+					else	//如果属于另一个can的
+						{
+						pthread_mutex_lock(&(can_eth_para_temp->_another_can->send_lock));
+						int r=another_can_buf->PutFrame(&(clie_temp->m_rxBuf[frame_head]), 
+							&(another_can_buf->send_q), frame_len);
+#ifdef PRINT_PROCESS
+						printf("eth's frame:");//将从客户端读到的数据，在屏幕上输出
+						for (int i = 0; i < r; i++)
 							printf("0x%02x ",clie_temp->m_rxBuf[frame_head+i]);
 						printf("\n");
 #endif	
-
-//					unsigned short id_temp
-//						=((clie_temp->m_rxBuf[frame_head+1]&0xffff)<<8|clie_temp->m_rxBuf[frame_head+2]);	
-//					if(IsBelongTo(id_temp,(void*)can_eth_para_temp->_can))//如果属于第一个can的
-//						{
-//						pthread_mutex_lock(&(can_eth_para_temp->_can->send_lock));
-//						int r=_can_buf->PutFrame(&(clie_temp->m_rxBuf[frame_head]), 
-//							&(_can_buf->send_q), frame_len);
-//#ifdef PRINT_PROCESS
-//						printf("another can's frame:");//将从客户端读到的数据，在屏幕上输出
-//						for (int i = 0; i < r; i++)
-//							printf("0x%02x ",clie_temp->m_rxBuf[frame_head+i]);
-//						printf("\n");
-//#endif							
-//						pthread_mutex_unlock(&(can_eth_para_temp->_can->send_lock));
-////						pthread_cond_signal(&(can_eth_para_temp->_can->send_signal));
-//						}
-//					else	//如果属于另一个can的
-//						{
-//						pthread_mutex_lock(&(can_eth_para_temp->_another_can->send_lock));
-//						int r=another_can_buf->PutFrame(&(clie_temp->m_rxBuf[frame_head]), 
-//							&(another_can_buf->send_q), frame_len);
-//#ifdef PRINT_PROCESS
-//						printf("eth's frame:");//将从客户端读到的数据，在屏幕上输出
-//						for (int i = 0; i < r; i++)
-//							printf("0x%02x ",clie_temp->m_rxBuf[frame_head+i]);
-//						printf("\n");
-//#endif	
-//						pthread_mutex_unlock(&(can_eth_para_temp->_another_can->send_lock));
-////						pthread_cond_signal(&(can_eth_para_temp->_another_can->send_signal));									
-//						}
+						pthread_mutex_unlock(&(can_eth_para_temp->_another_can->send_lock));
+//						pthread_cond_signal(&(can_eth_para_temp->_another_can->send_signal));									
+						}
 					}
 				else
 					printf("xor error!	data missed!\n");
@@ -166,104 +203,7 @@ void* Task::CanReceive(void* can_eth_para)
 	 close(clie_temp->clie_sock);
 	 return 0;
  }
-
-void* Task::SendAll(void * can_eth_para)
-{
-	CanEthPara* can_eth_para_temp = (CanEthPara*)can_eth_para;
-	Client* clie_temp=  can_eth_para_temp->_client;
-	int fd = can_eth_para_temp->_can->can_sock;
-	int fd_another = can_eth_para_temp->_another_can->can_sock;
-	
-	Buffer* _can_buf = &(can_eth_para_temp->_can->can_buf);
-	Buffer* another_can_buf = &(can_eth_para_temp->_another_can->can_buf);
-	Buffer* _clie_buf=&(clie_temp->clie_buf);
-
-	char* temp=new char[BUF_LENGTH];
-	struct can_frame canfr;
-	struct can_frame canfr2;
-//	char* temp;
-//	temp=new char[FRAME_MAX_SIZE];
-//	char* temp2;
-//	temp2=new char[FRAME_MAX_SIZE];
-
-	while(1)
-	{	
-		int len=0;
-
-		
-		while(!EMPTY(_can_buf->recv_q))
-			{
-				memset(temp,0,FRAME_MAX_SIZE);
-				int ret=_can_buf->GetFrame(&(_can_buf->recv_q), temp);
-				unsigned short id_temp
-					=((temp[1]&0xffff)<<8 | temp[2]);
-				if(IsBelongTo(id_temp,(void*)can_eth_para_temp->_another_can))
-				{
-					/**************拆分成can报文：id+data***************/
-					 canfr2.can_id=id_temp;
-					 canfr2.can_dlc= ret-4;
-					 memset(canfr2.data,0,8);
-					 memcpy((void*)canfr2.data, temp+3, canfr2.can_dlc);
-					 write(fd_another, &canfr2, sizeof(canfr2));	
-				}else 
-					{
-//					printf("has send to client:::::::\n");
-					clie_temp->ClientSend(clie_temp->clie_sock ,temp,	ret  );//注意这里是clie_sock！！！
-				}
-			}
-
-		while(!EMPTY(another_can_buf->recv_q))
-			{
-				memset(temp,0,FRAME_MAX_SIZE);
-				int ret=another_can_buf->GetFrame(&(another_can_buf->recv_q), temp);
-				unsigned short id_temp
-					=((temp[1]&0xffff)<<8 | temp[2]);
-				if(IsBelongTo(id_temp,(void*)can_eth_para_temp->_can))
-				{
-					/**************拆分成can报文：id+data***************/
-					 canfr.can_id=id_temp;
-					 canfr.can_dlc= ret-4;
-					 memset(canfr.data,0,8);
-					 memcpy((void*)canfr.data, temp+3, canfr.can_dlc);
-					 write(fd, &canfr, sizeof(canfr));	
-				}else 
-					{
-					clie_temp->ClientSend(clie_temp->clie_sock ,temp,	ret  );//注意这里是clie_sock！！！
-				}
-			}
-		
-				while(!EMPTY(_clie_buf->recv_q))
-			{	
-				memset(temp,0,FRAME_MAX_SIZE);
-				int ret=_clie_buf->GetFrame(&(_clie_buf->recv_q), temp);
-				unsigned short id_temp
-					=((temp[1]&0xffff)<<8 | temp[2]);
-				if(IsBelongTo(id_temp,(void*)can_eth_para_temp->_can))
-				{
-					/**************拆分成can报文：id+data***************/
-					 canfr.can_id=id_temp;
-					 canfr.can_dlc= ret-4;
-					 memset(canfr.data,0,8);
-					 memcpy((void*)canfr.data, temp+3, canfr.can_dlc);
-//					 printf("has send to can:::::::\n");
-//					 CanComm::canPrintFrame(&canfr);
-					 write(fd, &canfr, sizeof(canfr));	
-				}else 
-					{
-					/**************拆分成can报文：id+data***************/
-					 canfr2.can_id=id_temp;
-					 canfr2.can_dlc= ret-4;
-					 memset(canfr2.data,0,8);
-					 memcpy((void*)canfr2.data, temp+3, canfr2.can_dlc);
-// 					 printf("has send to another can:::::::\n");
-//					 CanComm::canPrintFrame(&canfr2);	
-					 write(fd_another, &canfr2, sizeof(canfr2));	
-				}
-			}
-	}
-	delete[] temp;
-	return 0;
-}
+ 
 void* Task::CanSend(void* can)
 {
 	CanComm* can_temp=(CanComm*)can;

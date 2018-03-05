@@ -61,7 +61,7 @@ bool CanComm::CanInit(int channel)
 
     addr.can_family = AF_CAN;
     addr.can_ifindex = _ifr1.ifr_ifindex;
-//	printf("haaaaaaaaa:%d\n", addr.can_ifindex);
+	printf("haaaaaaaaa:%d\n", addr.can_ifindex);
 
     ret = bind(can_sock, (struct sockaddr *)&addr, sizeof(addr));//将套接字与can0绑定
     if (ret < 0)
@@ -84,7 +84,14 @@ bool CanComm::CanInit(int channel)
 //    }
     setsockopt(can_sock,SOL_CAN_RAW,CAN_RAW_RECV_OWN_MSGS,&ro,sizeof(ro));
 
+//    printf("socket1 init failed.\n");
 
+   /* if(!socketInit(m_s2,_ifr2))
+    {
+        printf("socket2 init failed.\n");
+        return false;
+    }
+    */
 
     can_sock_send = socket(domain,type,protocol);//创建socketcan套接字
     if (can_sock_send< 0)
@@ -122,7 +129,7 @@ bool CanComm::CanInit(int channel)
 
     addr2.can_family = AF_CAN;
     addr2.can_ifindex = _ifr2.ifr_ifindex;
-//	printf("haaaaaaaaa:%d\n", addr2.can_ifindex);
+	printf("haaaaaaaaa:%d\n", addr2.can_ifindex);
 
     ret = bind(can_sock_send, (struct sockaddr *)&addr2, sizeof(addr2));//将套接字与can0绑定
     if (ret < 0)
@@ -146,8 +153,8 @@ bool CanComm::CanInit(int channel)
     setsockopt(can_sock_send,SOL_CAN_RAW,CAN_RAW_RECV_OWN_MSGS,&ro,sizeof(ro));
 
 
-//	printf("sock1:%d",can_sock);
-//	printf("sock2:%d  \n",can_sock_send);
+	printf("sock1:%d",can_sock);
+	printf("sock2:%d  \n",can_sock_send);
 	can_buf.BufferInit();	
 	send_signal = PTHREAD_COND_INITIALIZER;
 	send_lock = PTHREAD_MUTEX_INITIALIZER;	
@@ -184,9 +191,9 @@ void CanComm::CanRecvFilter(int& sock)
 					}	
 		}
 /**************打印filter数组****************/
-//	printf("filter_id:\n");
-//	for(int i=0; i<size ;i++)
-//		printf("0x%03x\t",m_filter[i].can_id);
+	printf("filter_id:\n");
+	for(int i=0; i<size ;i++)
+		printf("0x%03x\t",m_filter[i].can_id);
     /* 启用过滤规则*/
     int ret = setsockopt(sock, SOL_CAN_RAW, CAN_RAW_FILTER, &m_filter, sizeof(m_filter));//这里一定要注意，如果sizeof的大小为0，则什么都不接收
     if (ret < 0)																		 //如果sizeof有大小，但是数组里存在0，则什么都接收

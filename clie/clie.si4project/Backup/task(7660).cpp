@@ -82,6 +82,31 @@ void* Task::CanReceive(void* can_eth_para)
 
 			another_can_buf->PutFrame(temp2, &(another_can_buf->recv_q), temp2[0]);
 			
+//			if(IsBelongTo(fr2.can_id, (void*)can_eth_para_temp->_can))//如果要发给另一个can
+//			{		
+//				pthread_mutex_lock(&(can_eth_para_temp->_can->send_lock));				
+//				int r=_can_buf->PutFrame(temp2, &(_can_buf->send_q),temp2[0]);
+//#ifdef PRINT_PROCESS
+//				printf("another2 can's frame:");//将从客户端读到的数据，在屏幕上输出
+//				for (int i = 0; i < r; i++)
+//					printf("0x%02x ",temp2[i]);
+//				printf("\n");
+//#endif
+//				pthread_mutex_unlock(&(can_eth_para_temp->_can->send_lock));
+////				pthread_cond_signal(&(can_eth_para_temp->_can->send_signal));
+//			}else						//如果要发给以太网
+//			{			
+//				pthread_mutex_lock(&(can_eth_para_temp->_client->send_lock));
+//				int r=_clie_buf->PutFrame(temp2, &(_clie_buf->send_q),temp2[0]);
+//#ifdef PRINT_PROCESS
+//				printf("eth's frame:");//将从客户端读到的数据，在屏幕上输出
+//				for (int i = 0; i < r; i++)
+//					printf("0x%02x ",temp2[i]);
+//				printf("\n");
+//#endif
+//				pthread_mutex_unlock(&(can_eth_para_temp->_client->send_lock));
+////				pthread_cond_signal(&(can_eth_para_temp->_client->send_signal));
+//			}
 		}
 
 	}
