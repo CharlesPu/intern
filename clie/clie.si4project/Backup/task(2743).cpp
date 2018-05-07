@@ -162,11 +162,6 @@ void* Task::CanReceive(void* can_eth_para)
 				frame_head += frame_len;
 			}
 		 }
-		else if (ret == 0)
-		{
-			printf("client_socket %d close connection\n", clie_temp->clie_sock);
-			close(clie_temp->clie_sock);
-		 }
 	 }
 	 close(clie_temp->clie_sock);
 	 return 0;
