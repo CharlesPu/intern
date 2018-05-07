@@ -45,7 +45,7 @@ bool Client::ClientInit(int port )
     //_addrLocal.sin_addr.s_addr = INADDR_ANY;
     inet_pton(AF_INET, SERV_IP, &ServAddr.sin_addr.s_addr); 
 	
-	int recvbuf=2000;		 //recv的内核缓冲buf为4000字节
+	int recvbuf=2000;		 //send的内核缓冲buf为4000字节
 	int len = sizeof(recvbuf); 
 //	setsockopt(ClieSock, SOL_SOCKET, SO_RCVBUF, &recvbuf, sizeof(recvbuf)); 
     getsockopt(clie_sock, SOL_SOCKET, SO_RCVBUF, &recvbuf, (socklen_t*)&len);  
