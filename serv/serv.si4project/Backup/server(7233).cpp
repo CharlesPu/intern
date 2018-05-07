@@ -68,7 +68,7 @@ bool Server::ServerInit(int port )
 
     bzero(&(_addrLocal.sin_zero),8);
 
-    _epfd = epoll_create(CLIENT_MAX);//max client 100
+    _epfd = epoll_create(100);//max client 100
 
     if ((serv_sock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
     {
