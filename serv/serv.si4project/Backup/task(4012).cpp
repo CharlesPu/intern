@@ -118,10 +118,6 @@ void* Task::ServerReceive(void* can_eth_para)
                 int ret = serv_temp->ServerRecv(st);//client send data
                 if(ret <= 0)
                 {
-                	//先从红黑树上删除此节点
-					int res = epoll_ctl(serv_temp->_epfd, EPOLL_CTL_DEL, st, NULL);  
-					if (res == -1)
-						perror("epoll_ctl_delete fail!\r\n");
                     close(st);
                     serv_temp->_events[i].data.fd = -1;
                     continue;
